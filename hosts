@@ -1,0 +1,15 @@
+[master]
+x.x.x.x ansible_user=ubuntu ansible_private_key_file=/root/Desktop/Docker-M.pem
+
+
+[worker]
+y.y.y.y ansible_user=ubuntu ansible_private_key_file=/root/Desktop/Docker-S.pem
+
+[docker_hosts:children]
+worker
+master
+
+
+#replace 
+#x.x.x.x with your master publib ip
+#y.y.y.y with your worker [second node] public ip

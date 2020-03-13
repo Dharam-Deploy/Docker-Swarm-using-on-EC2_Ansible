@@ -1,0 +1,68 @@
+- hosts: docker_hosts
+  tasks:
+          - name: Installing required updates
+            apt:
+                    name: "aptitude"
+                    state: latest
+                    update_cache: yes
+                    force_apt_get: yes
+
+          - name: install system req. packages
+            apt:
+                    name:
+                            - apt-transport-https
+                            - ca-certificates
+                            - curl
+                            - software-properties-common
+                            - python3-pip
+                            - virtualenv
+                            - python3-setuptools
+                    state: latest
+                    update_cache: yes
+
+          - name: Add Docker GPG apt Key
+            apt_key:
+                    url: https://download.docker.com/linux/ubuntu/gpg
+                    state: present
+
+          - name: Add Docker Repository
+            apt_repository:
+                    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+                    state: present
+
+          - name: Installing docker-ce
+            apt:
+                    name: "docker-ce"
+                    state: latest
+                    update_cache: yes
+
+          - name: install docker module for python
+            pip:
+                    name: docker
+
+          - name: Starting docker service
+            service:
+                    name: "docker"
+                    state: started
+                    enabled: yes
+        
+
+
+- hosts: worker
+  tasks:
+          - name: Pull docker image from docker hub
+            docker_image:
+                    name: ubuntu
+                    source: pull
+
+          - name: Making a docker Container
+            docker_container:
+                   name: Mycontainer
+                   image: ubuntu
+                   state: started
+                   ports:
+                           - "8080:80"
+                   tty: true
+                   detach: true
+
+#enabling port is optional here if you want to access httpd server than use port 8080

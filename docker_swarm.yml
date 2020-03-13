@@ -1,0 +1,34 @@
+- name: importing Docker setup file
+  import_playbook: docker_setup.yml
+- name: Initilize Docker_Swarm Master
+  hosts: master
+  become: true
+  tasks:
+          - name: Initilizing Docker Swarm
+            docker_swarm:
+                    state: present
+
+          - name: get worker token
+            command: 'docker swarm join-token worker -q'
+            register: worker_token
+
+          - name: Showing Worker Token
+            debug: var=worker_token.stdout
+
+- name: Join Swarm Cluster
+  hosts: worker
+  become: true
+  vars:
+          token: "{{ hostvars[groups['master'][0]]['worker_token']['stdout'] }}"
+          master: "{{ hostvars[groups['master'][0]]['inventory_hostname'] }}"
+  tasks:
+          
+          - name: Adding worker to swarm
+            command: 'docker swarm join --token {{ token }} {{ master }}:2377'
+            register: worker
+
+          - name: Show Result
+            debug: var=worker.stdout
+
+          - name: Show Errors
+            debug: var=worker.stderr
